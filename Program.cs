@@ -24,7 +24,8 @@ namespace cybersecuritybot
             private readonly List<string> supportedCommands = new List<string>
             {
                 "topics", "exit", "hello", "hi", "how are you", "what is your name", "tell me a joke",
-                "phishing", "malware", "passwords","two-factor authentication","backups", "public wifi"
+                "phishing", "malware", "passwords", "social engineering", "data protection",
+                "ransomware", "two-factor authentication", "updates", "backups", "public wifi"
             };
 
             // Validate input based on type
@@ -140,7 +141,11 @@ namespace cybersecuritybot
                 "phishing",
                 "malware",
                 "passwords",
+                "social engineering",
+                "data protection",
+                "ransomware",
                 "two-factor authentication",
+                "updates",
                 "backups",
                 "public wifi"
             };
