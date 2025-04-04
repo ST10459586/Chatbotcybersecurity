@@ -1,4 +1,3 @@
-# cybersecuritybot
 # Cybersecurity Awareness Assistant
 
 ## Overview
