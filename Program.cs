@@ -1,11 +1,139 @@
 ﻿using System;
 using System.Media;
+using System.Text;
+using System.Threading;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace cybersecuritybot
 {
     internal class Program
     {
-        private static string username = "User"; // Default username to avoid null reference
+        private static string username = "User";
+
+        public class InputValidator
+        {
+            // Dictionary of validation patterns
+            private readonly Dictionary<string, Regex> validationPatterns = new Dictionary<string, Regex>
+            {
+                { "name", new Regex(@"^[a-zA-Z\s]{2,30}$") },
+                { "command", new Regex(@"^[a-zA-Z\s]+$") }
+            };
+
+            // List of supported commands
+            private readonly List<string> supportedCommands = new List<string>
+            {
+                "topics", "exit", "hello", "hi", "how are you", "what is your name", "tell me a joke",
+                "phishing", "malware", "passwords", "social engineering", "data protection",
+                "ransomware", "two-factor authentication", "updates", "backups", "public wifi"
+            };
+
+            // Validate input based on type
+            public bool IsValid(string input, string type)
+            {
+                if (string.IsNullOrWhiteSpace(input))
+                    return false;
+
+                if (type == "command")
+                {
+                    foreach (var cmd in supportedCommands)
+                    {
+                        if (input.ToLower().Contains(cmd))
+                            return true;
+                    }
+                    return false;
+                }
+                else if (validationPatterns.ContainsKey(type))
+                {
+                    return validationPatterns[type].IsMatch(input);
+                }
+
+                return !string.IsNullOrWhiteSpace(input);
+            }
+
+            // Validating input
+            public string GetValidInput(string prompt, string type)
+            {
+                string input;
+                bool isValid = false;
+
+                do
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write($"{prompt}: ");
+                    Console.ResetColor();
+
+                    input = Console.ReadLine()?.Trim() ?? "";
+
+                    isValid = IsValid(input, type);
+                    if (!isValid)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Invalid input. Please enter a valid {type}.");
+                        Console.ResetColor();
+                    }
+                } while (!isValid);
+
+                return input;
+            }
+        }
+
+        public class ConsoleUI
+        {
+            // Display text with typing effect
+            public static void TypeText(string text, int delay = 10)
+            {
+                foreach (char c in text)
+                {
+                    Console.Write(c);
+                    Thread.Sleep(delay);
+                }
+                Console.WriteLine();
+            }
+
+            // Display a section header
+            public static void DisplayHeader(string title)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"\n┌─── {title} ───".PadRight(50, '─') + "┐");
+                Console.ResetColor();
+            }
+
+            // Display a section footer
+            public static void DisplayFooter()
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"└" + "".PadRight(50, '─') + "┘\n");
+                Console.ResetColor();
+            }
+
+            // Display welcome message with ASCII art
+            public static void DisplayWelcome()
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(@"
+      ┌────────────────────────────────────────────┐
+      │             CYBERSECURITY                  │
+      │           AWARENESS ASSISTANT              │
+      ├────────────────────────────────────────────┤
+      │  ★★★ Version 1.0 ★★★                   │
+      │  Created: March 31, 2025                   │
+      │  Keeping you safe in the digital world     │
+      └────────────────────────────────────────────┘
+      ");
+                Console.ResetColor();
+            }
+
+            // Display bot response with highlighting
+            public static void BotResponse(string message)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("\nCSA Bot: ");
+                Console.ResetColor();
+                TypeText(message);
+            }
+        }
 
         public class Chatbot
         {
@@ -63,19 +191,22 @@ namespace cybersecuritybot
 
             public void StartConversation()
             {
-                Console.WriteLine($"Hello, {Program.username}! I'm your Cybersecurity Awareness Assistant.");
-                Console.WriteLine("I can help you learn about various cybersecurity topics such as phishing, malware, passwords, and more.");
-                Console.WriteLine("Type 'topics' to see all available topics, or type 'exit' to end our conversation.");
+                ConsoleUI.DisplayHeader("WELCOME MESSAGE");
+                ConsoleUI.BotResponse($"Hello, {Program.username}! I'm your Cybersecurity Awareness Assistant.");
+                ConsoleUI.BotResponse("I can help you learn about various cybersecurity topics such as phishing, malware, passwords, and more.");
+                ConsoleUI.BotResponse("Type 'topics' to see all available topics, or type 'exit' to end our conversation.");
+                ConsoleUI.DisplayFooter();
             }
 
             public string ProcessInput(string input)
             {
+                // Added input validation
                 if (string.IsNullOrEmpty(input))
                     return "I didn't catch that. Could you please try again?";
 
                 input = input.ToLower().Trim();
 
-                if (input == "hello")
+                if ((input == "hello") || (input == "hi"))
                     return $"Hello, {Program.username}! How can I assist you with cybersecurity today?";
 
                 if (input == "how are you")
@@ -88,7 +219,19 @@ namespace cybersecuritybot
                     return "Goodbye! Stay safe online!";
 
                 if (input == "topics")
-                    return "I can provide information on these cybersecurity topics: " + string.Join(", ", cybersecurityTopics) + ". What would you like to learn about?";
+                {
+                    // Enhanced topics display
+                    ConsoleUI.DisplayHeader("AVAILABLE TOPICS");
+                    StringBuilder sb = new StringBuilder("I can provide information on these cybersecurity topics:\n");
+
+                    foreach (string topic in cybersecurityTopics)
+                    {
+                        sb.Append($"\n• {topic}");
+                    }
+
+                    sb.Append("\n\nWhat would you like to learn about?");
+                    return sb.ToString();
+                }
 
                 if (input == "tell me a joke")
                     return "Why don't hackers go on vacation? They're afraid of getting phished! Now, let's get back to cybersecurity awareness.";
@@ -98,6 +241,7 @@ namespace cybersecuritybot
                 {
                     if (input.Contains(topic))
                     {
+                        ConsoleUI.DisplayHeader($"TOPIC: {topic.ToUpper()}");
                         return GetCybersecurityInfo(topic);
                     }
                 }
@@ -108,7 +252,8 @@ namespace cybersecuritybot
 
         static void Main(string[] args)
         {
-            DisplayLogo();
+            // Enhanced display logo
+            ConsoleUI.DisplayWelcome();
             Console.WriteLine("Hello, Welcome to Cybersecurity Awareness Bot! I am here to help you stay safe online");
 
             // Plays welcome audio file at the beginning
@@ -121,13 +266,16 @@ namespace cybersecuritybot
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Note: Welcome audio could not be played: {ex.Message}");
+                Console.ResetColor();
             }
 
-            Console.Write("Please enter your name: ");
-            username = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(username))
-                username = "User";
+            // Added validation for username input
+            InputValidator validator = new InputValidator();
+            ConsoleUI.DisplayHeader("USER INFORMATION");
+            username = validator.GetValidInput("Please enter your name", "name");
+            ConsoleUI.DisplayFooter();
 
             try
             {
@@ -137,47 +285,44 @@ namespace cybersecuritybot
                 bool shutdown = false;
                 while (!shutdown)
                 {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.Write("\nUser: ");
+                    Console.ResetColor();
+
                     string input = Console.ReadLine();
 
                     if (input == null)
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Input was null. Exiting...");
+                        Console.ResetColor();
                         break;
                     }
 
                     string response = chatbot.ProcessInput(input);
-                    Console.WriteLine($"CSA Bot: {response}");
+
+                    // Enhanced response display
+                    ConsoleUI.BotResponse(response);
 
                     if (input.ToLower().Trim() == "exit")
+                    {
+                        ConsoleUI.DisplayHeader("GOODBYE");
+                        Console.WriteLine("Thank you for using the Cybersecurity Awareness Assistant!");
+                        Console.WriteLine("Remember to stay vigilant online.");
+                        ConsoleUI.DisplayFooter();
                         shutdown = true;
+                    }
                 }
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 Console.WriteLine(ex.StackTrace); // Print stack trace for debugging
                 Console.WriteLine("Press any key to exit...");
+                Console.ResetColor();
                 Console.ReadKey();
             }
-        }
-
-        static void DisplayLogo()
-        {
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            string logo = @"
-      ┌────────────────────────────┐
-      │      CAA CHATBOT APP       │
-      ├────────────────────────────┤
-      │  ★★★ Version 1.0 ★★★   │
-      │  Created: March 31, 2025   │
-      └────────────────────────────┘
-      ";
-
-            Console.WriteLine(logo);
-            Console.ResetColor();
         }
     }
 }
