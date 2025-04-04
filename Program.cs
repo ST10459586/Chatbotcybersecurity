@@ -192,8 +192,7 @@ namespace cybersecuritybot
             public void StartConversation()
             {
                 ConsoleUI.DisplayHeader("WELCOME MESSAGE");
-                ConsoleUI.BotResponse($"Hello, {Program.username}! I'm your Cybersecurity Awareness Assistant.");
-                ConsoleUI.BotResponse("I can help you learn about various cybersecurity topics such as phishing, malware, passwords, and more.");
+                ConsoleUI.BotResponse($"Hello, {Program.username}! I'm your Cybersecurity Awareness Assistant.I can help you learn about various cybersecurity topics");
                 ConsoleUI.BotResponse("Type 'topics' to see all available topics, or type 'exit' to end our conversation.");
                 ConsoleUI.DisplayFooter();
             }
