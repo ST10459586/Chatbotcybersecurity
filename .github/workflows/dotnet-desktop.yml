@@ -77,6 +77,32 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
+      name: Build Chatbot
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet Packages
+        run: nuget restore path/to/your-chatbot.sln
+
+      - name: Build Project
+        run: msbuild path/to/your-chatbot.sln /p:Configuration=Release
+
+
     # Execute all unit tests in the solution
     - name: Execute unit tests
       run: dotnet test
